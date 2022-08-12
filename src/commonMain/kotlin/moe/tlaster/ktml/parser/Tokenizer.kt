@@ -18,7 +18,7 @@ internal class Tokenizer {
     var currentState: State = DataState
     var characterReferenceCode: Int = 0
     val errors = arrayListOf<Error>()
-    var buffer = StringBuilder()
+    private var buffer = StringBuilder()
     val tokens = arrayListOf<Token>()
     private val tokenBuilders = arrayListOf<TokenBuilder>()
     fun parse(reader: Reader) {
@@ -45,7 +45,7 @@ internal class Tokenizer {
             }
             TagClose -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is TagBuilder || last is EndTagBuilder || last is AttributeBuilder) { "last token is not a tag" }
+                require(last is TagBuilder || last is EndTagBuilder || last is AttributeBuilder) { "last token is not a tag, is $last, tokens: $tokenBuilders" }
             }
             EndTagOpen -> {
                 tokenBuilders.add(EndTagBuilder())
@@ -55,33 +55,33 @@ internal class Tokenizer {
             }
             is CommentChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is CommentBuilder) { "last token is not a comment" }
+                require(last is CommentBuilder) { "last token is not a comment, is $last, tokens: $tokenBuilders" }
                 last.content.append(tokenCharacter.char)
             }
             is CommentClose -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is CommentBuilder) { "last token is not a comment" }
+                require(last is CommentBuilder) { "last token is not a comment, is $last, tokens: $tokenBuilders" }
             }
             DocTypeOpen -> {
                 tokenBuilders.add(DocTypeBuilder())
             }
             is DocTypeChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is DocTypeBuilder) { "last token is not a doctype" }
+                require(last is DocTypeBuilder) { "last token is not a doctype, is $last, tokens: $tokenBuilders" }
                 last.name.append(tokenCharacter.char)
             }
             is DocTypeClose -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is DocTypeBuilder) { "last token is not a doctype" }
+                require(last is DocTypeBuilder) { "last token is not a doctype, is $last, tokens: $tokenBuilders" }
             }
             is DocTypePublicIdentifierChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is DocTypeBuilder) { "last token is not a doctype" }
+                require(last is DocTypeBuilder) { "last token is not a doctype, is $last, tokens: $tokenBuilders" }
                 last.publicIdentifier.append(tokenCharacter.char)
             }
             is DocTypeSystemIdentifierChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is DocTypeBuilder) { "last token is not a doctype" }
+                require(last is DocTypeBuilder) { "last token is not a doctype, is $last, tokens: $tokenBuilders" }
                 last.systemIdentifier.append(tokenCharacter.char)
             }
             AttributeOpen -> {
@@ -89,17 +89,17 @@ internal class Tokenizer {
             }
             is AttributeChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is AttributeBuilder) { "last token is not an attribute" }
+                require(last is AttributeBuilder) { "last token is not an attribute, is $last, tokens: $tokenBuilders" }
                 last.name.append(tokenCharacter.char)
             }
             is AttributeValueChar -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is AttributeBuilder) { "last token is not an attribute" }
+                require(last is AttributeBuilder) { "last token is not an attribute, is $last, tokens: $tokenBuilders" }
                 last.value.append(tokenCharacter.char)
             }
             ForceQuirks -> {
                 val last = tokenBuilders.lastOrNull()
-                require(last is DocTypeBuilder) { "last token is not a tag" }
+                require(last is DocTypeBuilder) { "last token is not a tag, is $last, tokens: $tokenBuilders" }
                 last.forceQuirks = true
             }
             is Character -> {
@@ -131,7 +131,6 @@ internal class Tokenizer {
 
     fun createTempBuffer() {
         buffer.clear()
-        buffer.append(' ')
     }
 
     fun appendToTempBuffer(char: Char) {
@@ -166,5 +165,25 @@ internal class Tokenizer {
         val last = tokenBuilders.last()
         val lastOpenTag = tokenBuilders.last { it is TagBuilder } as TagBuilder
         return last is EndTagBuilder && last.name.toString() == lastOpenTag.name.toString()
+    }
+
+    // Workaround for Google && YouTube
+    fun isInScript(): Boolean {
+        val last = tokenBuilders.lastOrNull() ?: return false
+        if (last !is TextBuilder) {
+            return false
+        }
+        val lastOpenScriptTag = tokenBuilders.lastOrNull { it is TagBuilder && it.name.toString() == "script" } ?: return false
+        val lastOpenScriptTagIndex = tokenBuilders.indexOf(lastOpenScriptTag)
+        if (lastOpenScriptTagIndex == tokenBuilders.lastIndex - 1) {
+            return true
+        }
+        for (i in lastOpenScriptTagIndex until tokenBuilders.size) {
+            val token = tokenBuilders[i]
+            if (token !is AttributeBuilder && token !is TagBuilder && token !is TextBuilder) {
+                return false
+            }
+        }
+        return true
     }
 }

@@ -31,7 +31,14 @@ private const val NULL = '\u0000'
 internal object DataState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         when (val current = reader.consume()) {
-            '<' -> tokenizer.switch(TagOpenState)
+            '<' -> {
+                // Workaround for Google && YouTube
+                if (tokenizer.isInScript() && reader.hasNext() && reader.next() != '/') {
+                    tokenizer.emit(Character(current))
+                } else {
+                    tokenizer.switch(TagOpenState)
+                }
+            }
             '&' -> {
                 tokenizer.returnState = DataState
                 tokenizer.switch(CharacterReferenceState)
@@ -120,14 +127,14 @@ internal object TagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(TagOpen)
                 tokenizer.switch(TagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             '?' -> {
                 tokenizer.error(UnexpectedQuestionMarkInsteadOfTagName(reader.position))
                 tokenizer.emit(CommentOpen)
                 tokenizer.switch(BogusCommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             eof -> {
@@ -139,7 +146,7 @@ internal object TagOpenState : State {
                 tokenizer.error(InvalidFirstCharacterOfTagName(reader.position))
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(DataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -151,7 +158,7 @@ internal object EndTagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(EndTagOpen)
                 tokenizer.switch(TagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             '>' -> {
@@ -170,7 +177,7 @@ internal object EndTagOpenState : State {
                 tokenizer.error(InvalidFirstCharacterOfTagName(reader.position))
                 tokenizer.emit(CommentOpen)
                 tokenizer.switch(BogusCommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -224,7 +231,7 @@ internal object RcDataLessThanSignState : State {
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(RcDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -236,14 +243,14 @@ internal object RcDataEndTagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(EndTagOpen)
                 tokenizer.switch(RcDataEndTagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.emit(Character('\u002F'))
                 tokenizer.switch(RcDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -295,7 +302,7 @@ internal object RcDataEndTagNameState : State {
             tokenizer.emit(Character(it))
         }
         tokenizer.switch(RcDataState)
-        reader.pushback(current)
+        reader.pushback()
     }
 }
 
@@ -310,7 +317,7 @@ internal object RawTextLessThanSignState : State {
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(RawTextState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -322,14 +329,14 @@ internal object RawTextEndTagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(EndTagOpen)
                 tokenizer.switch(RawTextEndTagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.emit(Character('\u002F'))
                 tokenizer.switch(RawTextState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -381,7 +388,7 @@ internal object RawTextEndTagNameState : State {
             tokenizer.emit(Character(it))
         }
         tokenizer.switch(RawTextState)
-        reader.pushback(current)
+        reader.pushback()
     }
 }
 
@@ -402,7 +409,7 @@ internal object ScriptDataLessThanSignState : State {
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(ScriptDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -414,14 +421,14 @@ internal object ScriptDataEndTagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(EndTagOpen)
                 tokenizer.switch(ScriptDataEndTagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.emit(Character('\u002F'))
                 tokenizer.switch(ScriptDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -473,7 +480,7 @@ internal object ScriptDataEndTagNameState : State {
             tokenizer.emit(Character(it))
         }
         tokenizer.switch(ScriptDataState)
-        reader.pushback(current)
+        reader.pushback()
     }
 }
 
@@ -487,7 +494,7 @@ internal object ScriptDataEscapeStartState : State {
 
             else -> {
                 tokenizer.switch(ScriptDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -503,7 +510,7 @@ internal object ScriptDataEscapeStartDashState : State {
 
             else -> {
                 tokenizer.switch(ScriptDataState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -617,13 +624,13 @@ internal object ScriptDataEscapedLessThanSignState : State {
                 tokenizer.createTempBuffer()
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(ScriptDataDoubleEscapeStartState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.switch(ScriptDataEscapedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -635,14 +642,14 @@ internal object ScriptDataEscapedEndTagOpenState : State {
             in asciiAlpha -> {
                 tokenizer.emit(EndTagOpen)
                 tokenizer.switch(ScriptDataEscapedEndTagNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.emit(Character('\u003C'))
                 tokenizer.emit(Character('\u002F'))
                 tokenizer.switch(ScriptDataEscapedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -692,7 +699,7 @@ internal object ScriptDataEscapedEndTagNameState : State {
         tokenizer.emit(Character('\u002F'))
         tokenizer.emit(Character(current))
         tokenizer.switch(ScriptDataEscapedState)
-        reader.pushback(current)
+        reader.pushback()
     }
 }
 
@@ -715,7 +722,7 @@ internal object ScriptDataDoubleEscapeStartState : State {
 
             else -> {
                 tokenizer.switch(ScriptDataEscapedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -830,7 +837,7 @@ internal object ScriptDataDoubleEscapedLessThanSignState : State {
 
             else -> {
                 tokenizer.switch(ScriptDataDoubleEscapedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -855,7 +862,7 @@ internal object ScriptDataDoubleEscapeEndState : State {
 
             else -> {
                 tokenizer.switch(ScriptDataDoubleEscapedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -870,7 +877,7 @@ internal object BeforeAttributeNameState : State {
 
             '/', '>', eof -> {
                 tokenizer.switch(AfterAttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             '=' -> {
@@ -883,7 +890,7 @@ internal object BeforeAttributeNameState : State {
             else -> {
                 tokenizer.emit(AttributeOpen)
                 tokenizer.switch(AttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -894,7 +901,7 @@ internal object AttributeNameState : State {
         when (val current = reader.consume()) {
             '\u0009', '\u000A', '\u000C', '\u0020', '\u002F', '\u003E', eof -> {
                 tokenizer.switch(AfterAttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             '=' -> {
@@ -947,7 +954,7 @@ internal object AfterAttributeNameState : State {
             else -> {
                 tokenizer.emit(AttributeOpen)
                 tokenizer.switch(AttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -976,7 +983,7 @@ internal object BeforeAttributeValueState : State {
 
             else -> {
                 tokenizer.switch(AttributeValueUnquotedState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1103,7 +1110,7 @@ internal object AfterAttributeValueQuotedState : State {
             else -> {
                 tokenizer.error(MissingWhitespaceBetweenAttributes(reader.position))
                 tokenizer.switch(BeforeAttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1126,7 +1133,7 @@ internal object SelfClosingStartTagState : State {
             else -> {
                 tokenizer.error(UnexpectedSolidusInTag(reader.position))
                 tokenizer.switch(BeforeAttributeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1201,7 +1208,7 @@ internal object CommentStartState : State {
 
             else -> {
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1229,7 +1236,7 @@ internal object CommentStartDashState : State {
             else -> {
                 tokenizer.emit(CommentChar('-'))
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1279,7 +1286,7 @@ internal object CommentLessThanSignState : State {
 
             else -> {
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1294,7 +1301,7 @@ internal object CommentLessThanSignBangState : State {
 
             else -> {
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1309,7 +1316,7 @@ internal object CommentLessThanSignBangDashState : State {
 
             else -> {
                 tokenizer.switch(CommentEndDashState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1320,13 +1327,13 @@ internal object CommentLessThanSignBangDashDashState : State {
         when (val current = reader.consume()) {
             '>', eof -> {
                 tokenizer.switch(CommentEndState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.error(NestedComment(reader.position))
                 tokenizer.switch(CommentEndState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1348,7 +1355,7 @@ internal object CommentEndDashState : State {
             else -> {
                 tokenizer.emit(CommentChar('\u002D'))
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1379,7 +1386,7 @@ internal object CommentEndState : State {
             else -> {
                 tokenizer.emit(CommentChar('\u002D'))
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1411,7 +1418,7 @@ internal object CommentEndBangState : State {
                 tokenizer.emit(CommentChar('-'))
                 tokenizer.emit(CommentChar('!'))
                 tokenizer.switch(CommentState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1426,7 +1433,7 @@ internal object DoctypeState : State {
 
             '>' -> {
                 tokenizer.switch(BeforeDoctypeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             eof -> {
@@ -1440,7 +1447,7 @@ internal object DoctypeState : State {
             else -> {
                 tokenizer.error(MissingWhitespaceBeforeDoctypeName(reader.position))
                 tokenizer.switch(BeforeDoctypeNameState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1557,7 +1564,7 @@ internal object AfterDoctypeNameState : State {
                     tokenizer.error(InvalidCharacterSequenceAfterDoctypeName(reader.position))
                     tokenizer.emit(ForceQuirks)
                     tokenizer.switch(BogusDoctypeState)
-                    reader.pushback(current)
+                    reader.pushback()
                 }
             }
         }
@@ -1601,7 +1608,7 @@ internal object AfterDoctypePublicKeywordState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypePublicIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1642,7 +1649,7 @@ internal object BeforeDoctypePublicIdentifierState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypePublicIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1749,7 +1756,7 @@ internal object AfterDoctypePublicIdentifierState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypeSystemIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1788,7 +1795,7 @@ internal object BetweenDoctypePublicAndSystemIdentifiersState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypeSystemIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1831,7 +1838,7 @@ internal object AfterDoctypeSystemKeywordState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypeSystemIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1872,7 +1879,7 @@ internal object BeforeDoctypeSystemIdentifierState : State {
                 tokenizer.error(MissingQuoteBeforeDoctypeSystemIdentifier(reader.position))
                 tokenizer.emit(ForceQuirks)
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -1966,7 +1973,7 @@ internal object AfterDoctypeSystemIdentifierState : State {
             else -> {
                 tokenizer.error(UnexpectedCharacterAfterDoctypeSystemIdentifier(reader.position))
                 tokenizer.switch(BogusDoctypeState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2025,7 +2032,7 @@ internal object CdataSectionBracketState : State {
             else -> {
                 tokenizer.emit(Character(']'))
                 tokenizer.switch(CdataSectionState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2045,7 +2052,7 @@ internal object CdataSectionEndState : State {
             else -> {
                 tokenizer.emit(Character(']'))
                 tokenizer.switch(CdataSectionState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2058,7 +2065,7 @@ internal object CharacterReferenceState : State {
         when (val current = reader.consume()) {
             in asciiAlphanumeric -> {
                 tokenizer.switch(NamedCharacterReferenceState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             '#' -> {
@@ -2070,7 +2077,7 @@ internal object CharacterReferenceState : State {
                 tokenizer.flushTempBuffer()
                 val returnState = tokenizer.returnState
                 tokenizer.switch(returnState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2078,34 +2085,38 @@ internal object CharacterReferenceState : State {
 
 internal object NamedCharacterReferenceState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
+        val maxLength = namedCharacters.keys.maxOf { it.length }
         val consumedCharacters = StringBuilder()
         while (reader.hasNext()) {
+            if (consumedCharacters.length == maxLength) {
+                break
+            }
             val current = reader.consume()
             consumedCharacters.append(current)
             val consumedCharactersString = consumedCharacters.toString()
-            if (consumedCharactersString.startsWith("&") &&
-                namedCharacters.containsKey(consumedCharactersString)
-            ) {
+            if (namedCharacters.keys.count { it.startsWith(consumedCharactersString) } == 1) {
                 tokenizer.appendToTempBuffer(consumedCharactersString)
+            } else {
+                continue
             }
             val returnState = tokenizer.returnState
             if (returnState.inAttribute && current != ';' && reader.hasNext() && (reader.next() in asciiAlphanumeric || reader.next() == '=')) {
                 tokenizer.flushTempBuffer()
                 tokenizer.switch(returnState)
-                return
+            } else {
+                if (current != ';') {
+                    tokenizer.error(MissingSemicolonAfterCharacterReference(reader.position))
+                }
+                tokenizer.createTempBuffer()
+                namedCharacters[consumedCharactersString]!!.forEach {
+                    tokenizer.appendToTempBuffer(it.toChar())
+                }
+                tokenizer.flushTempBuffer()
+                tokenizer.switch(returnState)
             }
-            if (current != ';') {
-                tokenizer.error(MissingSemicolonAfterCharacterReference(reader.position))
-            }
-            val buffer = tokenizer.getTempBufferString()
-            tokenizer.createTempBuffer()
-            namedCharacters[buffer]!!.forEach {
-                tokenizer.appendToTempBuffer(it.toChar())
-            }
-            tokenizer.flushTempBuffer()
-            tokenizer.switch(returnState)
             return
         }
+        reader.pushback(consumedCharacters.length)
         tokenizer.flushTempBuffer()
         tokenizer.switch(AmbiguousAmpersandState)
     }
@@ -2126,12 +2137,12 @@ internal object AmbiguousAmpersandState : State {
             ';' -> {
                 tokenizer.error(UnkonwnNamedCharacterReference(reader.position))
                 tokenizer.switch(tokenizer.returnState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.switch(tokenizer.returnState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2148,7 +2159,7 @@ internal object NumericCharacterReferenceState : State {
 
             else -> {
                 tokenizer.switch(DecimalCharacterReferenceStartState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2159,14 +2170,14 @@ internal object HexadecimalCharacterReferenceStartState : State {
         when (val current = reader.consume()) {
             in asciiHexDigit -> {
                 tokenizer.switch(HexadecimalCharacterReferenceState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.error(AbsenceOfDigitInNumericCharacterReference(reader.position))
                 tokenizer.flushTempBuffer()
                 tokenizer.switch(tokenizer.returnState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2177,14 +2188,14 @@ internal object DecimalCharacterReferenceStartState : State {
         when (val current = reader.consume()) {
             in asciiDigit -> {
                 tokenizer.switch(DecimalCharacterReferenceState)
-                reader.pushback(current)
+                reader.pushback()
             }
 
             else -> {
                 tokenizer.error(AbsenceOfDigitInNumericCharacterReference(reader.position))
                 tokenizer.flushTempBuffer()
                 tokenizer.switch(tokenizer.returnState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2215,7 +2226,7 @@ internal object HexadecimalCharacterReferenceState : State {
             else -> {
                 tokenizer.error(MissingSemicolonAfterCharacterReference(reader.position))
                 tokenizer.switch(NumericCharacterReferenceEndState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
@@ -2236,7 +2247,7 @@ internal object DecimalCharacterReferenceState : State {
             else -> {
                 tokenizer.error(MissingSemicolonAfterCharacterReference(reader.position))
                 tokenizer.switch(NumericCharacterReferenceEndState)
-                reader.pushback(current)
+                reader.pushback()
             }
         }
     }
