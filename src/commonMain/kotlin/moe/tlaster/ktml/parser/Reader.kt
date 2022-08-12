@@ -2,7 +2,7 @@ package moe.tlaster.ktml.parser
 
 internal const val eof: Char = (-1).toChar()
 
-internal interface Reader {
+internal sealed interface Reader {
     val position: Long
     fun consume(length: Int = 1): Char
     fun next(): Char
@@ -11,7 +11,8 @@ internal interface Reader {
     fun isFollowedBy(value: String, ignoreCase: Boolean = false): Boolean
 }
 
-internal class StringReader(private val string: String) : Reader {
+internal class StringReader(string: String) : Reader {
+    private val string: String
     override val position: Long
         get() = _position
     private var _position = 0L
@@ -39,5 +40,9 @@ internal class StringReader(private val string: String) : Reader {
         }
         val s = string.substring(_position.toInt(), end.toInt())
         return if (ignoreCase) s.equals(value, ignoreCase = true) else s == value
+    }
+
+    init {
+        this.string = string + eof
     }
 }

@@ -193,12 +193,12 @@ internal object TagNameState : State {
             }
 
             in asciiUppercase -> {
-                tokenizer.emit(Tag(current.lowercaseChar()))
+                tokenizer.emit(TagChar(current.lowercaseChar()))
             }
 
             '\u0000' -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(Tag('\uFFFD'))
+                tokenizer.emit(TagChar('\uFFFD'))
             }
 
             eof -> {
@@ -207,7 +207,7 @@ internal object TagNameState : State {
             }
 
             else -> {
-                tokenizer.emit(Tag(current))
+                tokenizer.emit(TagChar(current))
             }
         }
     }
@@ -278,7 +278,7 @@ internal object RcDataEndTagNameState : State {
             }
 
             in asciiAlpha -> {
-                tokenizer.emit(Tag(current.lowercaseChar()))
+                tokenizer.emit(TagChar(current.lowercaseChar()))
                 tokenizer.appendToTempBuffer(current)
             }
 
@@ -364,7 +364,7 @@ internal object RawTextEndTagNameState : State {
             }
 
             in asciiAlpha -> {
-                tokenizer.emit(Tag(current.lowercaseChar()))
+                tokenizer.emit(TagChar(current.lowercaseChar()))
                 tokenizer.appendToTempBuffer(current)
             }
 
@@ -456,7 +456,7 @@ internal object ScriptDataEndTagNameState : State {
             }
 
             in asciiAlpha -> {
-                tokenizer.emit(Tag(current.lowercaseChar()))
+                tokenizer.emit(TagChar(current.lowercaseChar()))
                 tokenizer.appendToTempBuffer(current)
             }
 
@@ -677,7 +677,7 @@ internal object ScriptDataEscapedEndTagNameState : State {
             }
 
             in asciiAlpha -> {
-                tokenizer.emit(Tag(current.lowercaseChar()))
+                tokenizer.emit(TagChar(current.lowercaseChar()))
                 tokenizer.appendToTempBuffer(current)
             }
 
@@ -902,12 +902,12 @@ internal object AttributeNameState : State {
             }
 
             in asciiUppercase -> {
-                tokenizer.emit(Attribute(current.lowercaseChar()))
+                tokenizer.emit(AttributeChar(current.lowercaseChar()))
             }
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(Attribute('\uFFFD'))
+                tokenizer.emit(AttributeChar('\uFFFD'))
             }
 
             '\u0022', '\u0027', '\u003C' -> {
@@ -916,7 +916,7 @@ internal object AttributeNameState : State {
             }
 
             else -> {
-                tokenizer.emit(Attribute(current))
+                tokenizer.emit(AttributeChar(current))
             }
 
         }
@@ -996,7 +996,7 @@ internal object AttributeValueDoubleQuotedState : State {
 
             '\u0000' -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(AttributeValue('\uFFFD'))
+                tokenizer.emit(AttributeValueChar('\uFFFD'))
             }
 
             eof -> {
@@ -1005,7 +1005,7 @@ internal object AttributeValueDoubleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(AttributeValue(current))
+                tokenizer.emit(AttributeValueChar(current))
             }
         }
     }
@@ -1025,7 +1025,7 @@ internal object AttributeValueSingleQuotedState : State {
 
             '\u0000' -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(AttributeValue('\uFFFD'))
+                tokenizer.emit(AttributeValueChar('\uFFFD'))
             }
 
             eof -> {
@@ -1034,7 +1034,7 @@ internal object AttributeValueSingleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(AttributeValue(current))
+                tokenizer.emit(AttributeValueChar(current))
             }
         }
     }
@@ -1059,12 +1059,12 @@ internal object AttributeValueUnquotedState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(AttributeValue('\uFFFD'))
+                tokenizer.emit(AttributeValueChar('\uFFFD'))
             }
 
             '"', '\'', '<', '=', '`' -> {
                 tokenizer.error(UnexpectedCharacterInUnquotedAttributeValue(reader.position))
-                tokenizer.emit(AttributeValue(current))
+                tokenizer.emit(AttributeValueChar(current))
             }
 
             eof -> {
@@ -1073,7 +1073,7 @@ internal object AttributeValueUnquotedState : State {
             }
 
             else -> {
-                tokenizer.emit(AttributeValue(current))
+                tokenizer.emit(AttributeValueChar(current))
             }
         }
     }
@@ -1147,11 +1147,11 @@ internal object BogusCommentState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(Comment('\uFFFD'))
+                tokenizer.emit(CommentChar('\uFFFD'))
             }
 
             else -> {
-                tokenizer.emit(Comment(current))
+                tokenizer.emit(CommentChar(current))
             }
         }
     }
@@ -1227,7 +1227,7 @@ internal object CommentStartDashState : State {
             }
 
             else -> {
-                tokenizer.emit(Comment('-'))
+                tokenizer.emit(CommentChar('-'))
                 tokenizer.switch(CommentState)
                 reader.pushback(current)
             }
@@ -1243,13 +1243,13 @@ internal object CommentState : State {
             }
 
             '<' -> {
-                tokenizer.emit(Comment(current))
+                tokenizer.emit(CommentChar(current))
                 tokenizer.switch(CommentLessThanSignState)
             }
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(Comment('\uFFFD'))
+                tokenizer.emit(CommentChar('\uFFFD'))
             }
 
             eof -> {
@@ -1259,7 +1259,7 @@ internal object CommentState : State {
             }
 
             else -> {
-                tokenizer.emit(Comment(current))
+                tokenizer.emit(CommentChar(current))
             }
         }
     }
@@ -1269,12 +1269,12 @@ internal object CommentLessThanSignState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         when (val current = reader.consume()) {
             '!' -> {
-                tokenizer.emit(Comment(current))
+                tokenizer.emit(CommentChar(current))
                 tokenizer.switch(CommentLessThanSignBangState)
             }
 
             '-' -> {
-                tokenizer.emit(Comment(current))
+                tokenizer.emit(CommentChar(current))
             }
 
             else -> {
@@ -1346,7 +1346,7 @@ internal object CommentEndDashState : State {
             }
 
             else -> {
-                tokenizer.emit(Comment('\u002D'))
+                tokenizer.emit(CommentChar('\u002D'))
                 tokenizer.switch(CommentState)
                 reader.pushback(current)
             }
@@ -1367,7 +1367,7 @@ internal object CommentEndState : State {
             }
 
             '-' -> {
-                tokenizer.emit(Comment('\u002D'))
+                tokenizer.emit(CommentChar('\u002D'))
             }
 
             eof -> {
@@ -1377,7 +1377,7 @@ internal object CommentEndState : State {
             }
 
             else -> {
-                tokenizer.emit(Comment('\u002D'))
+                tokenizer.emit(CommentChar('\u002D'))
                 tokenizer.switch(CommentState)
                 reader.pushback(current)
             }
@@ -1389,9 +1389,9 @@ internal object CommentEndBangState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         when (val current = reader.consume()) {
             '-' -> {
-                tokenizer.emit(Comment('-'))
-                tokenizer.emit(Comment('-'))
-                tokenizer.emit(Comment('!'))
+                tokenizer.emit(CommentChar('-'))
+                tokenizer.emit(CommentChar('-'))
+                tokenizer.emit(CommentChar('!'))
                 tokenizer.switch(CommentEndDashState)
             }
 
@@ -1408,8 +1408,8 @@ internal object CommentEndBangState : State {
             }
 
             else -> {
-                tokenizer.emit(Comment('-'))
-                tokenizer.emit(Comment('!'))
+                tokenizer.emit(CommentChar('-'))
+                tokenizer.emit(CommentChar('!'))
                 tokenizer.switch(CommentState)
                 reader.pushback(current)
             }
@@ -1455,14 +1455,14 @@ internal object BeforeDoctypeNameState : State {
 
             in asciiUppercase -> {
                 tokenizer.emit(DocTypeOpen)
-                tokenizer.emit(DocType(current.lowercaseChar()))
+                tokenizer.emit(DocTypeChar(current.lowercaseChar()))
                 tokenizer.switch(DoctypeNameState)
             }
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
                 tokenizer.emit(DocTypeOpen)
-                tokenizer.emit(DocType('\uFFFD'))
+                tokenizer.emit(DocTypeChar('\uFFFD'))
                 tokenizer.switch(DoctypeNameState)
             }
 
@@ -1484,7 +1484,7 @@ internal object BeforeDoctypeNameState : State {
 
             else -> {
                 tokenizer.emit(DocTypeOpen)
-                tokenizer.emit(DocType(current))
+                tokenizer.emit(DocTypeChar(current))
                 tokenizer.switch(DoctypeNameState)
             }
         }
@@ -1504,12 +1504,12 @@ internal object DoctypeNameState : State {
             }
 
             in asciiUppercase -> {
-                tokenizer.emit(DocType(current.lowercaseChar()))
+                tokenizer.emit(DocTypeChar(current.lowercaseChar()))
             }
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(DocType('\uFFFD'))
+                tokenizer.emit(DocTypeChar('\uFFFD'))
             }
 
             eof -> {
@@ -1520,7 +1520,7 @@ internal object DoctypeNameState : State {
             }
 
             else -> {
-                tokenizer.emit(DocType(current))
+                tokenizer.emit(DocTypeChar(current))
             }
 
         }
@@ -1573,13 +1573,13 @@ internal object AfterDoctypePublicKeywordState : State {
 
             '"' -> {
                 tokenizer.error(MissingWhitespaceAfterDoctypePublicKeyword(reader.position))
-                tokenizer.emit(DocTypePublicIdentifier(' '))
+                tokenizer.emit(DocTypePublicIdentifierChar(' '))
                 tokenizer.switch(DoctypePublicIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
                 tokenizer.error(MissingWhitespaceAfterDoctypePublicKeyword(reader.position))
-                tokenizer.emit(DocTypePublicIdentifier(' '))
+                tokenizer.emit(DocTypePublicIdentifierChar(' '))
                 tokenizer.switch(DoctypePublicIdentifierSingleQuotedState)
             }
 
@@ -1615,12 +1615,12 @@ internal object BeforeDoctypePublicIdentifierState : State {
             }
 
             '"' -> {
-                tokenizer.emit(DocTypePublicIdentifier(' '))
+                tokenizer.emit(DocTypePublicIdentifierChar(' '))
                 tokenizer.switch(DoctypePublicIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
-                tokenizer.emit(DocTypePublicIdentifier(' '))
+                tokenizer.emit(DocTypePublicIdentifierChar(' '))
                 tokenizer.switch(DoctypePublicIdentifierSingleQuotedState)
             }
 
@@ -1664,7 +1664,7 @@ internal object DoctypePublicIdentifierDoubleQuotedState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(DocTypePublicIdentifier('\uFFFD'))
+                tokenizer.emit(DocTypePublicIdentifierChar('\uFFFD'))
             }
 
             eof -> {
@@ -1675,7 +1675,7 @@ internal object DoctypePublicIdentifierDoubleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(DocTypePublicIdentifier(current))
+                tokenizer.emit(DocTypePublicIdentifierChar(current))
             }
         }
     }
@@ -1697,7 +1697,7 @@ internal object DoctypePublicIdentifierSingleQuotedState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(DocTypePublicIdentifier('\uFFFD'))
+                tokenizer.emit(DocTypePublicIdentifierChar('\uFFFD'))
             }
 
             eof -> {
@@ -1708,7 +1708,7 @@ internal object DoctypePublicIdentifierSingleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(DocTypePublicIdentifier(current))
+                tokenizer.emit(DocTypePublicIdentifierChar(current))
             }
         }
     }
@@ -1728,13 +1728,13 @@ internal object AfterDoctypePublicIdentifierState : State {
 
             '"' -> {
                 tokenizer.error(MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
                 tokenizer.error(MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierSingleQuotedState)
             }
 
@@ -1768,12 +1768,12 @@ internal object BetweenDoctypePublicAndSystemIdentifiersState : State {
             }
 
             '"' -> {
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierSingleQuotedState)
             }
 
@@ -1803,13 +1803,13 @@ internal object AfterDoctypeSystemKeywordState : State {
 
             '"' -> {
                 tokenizer.error(MissingWhitespaceAfterDoctypeSystemKeyword(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
                 tokenizer.error(MissingWhitespaceAfterDoctypeSystemKeyword(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierSingleQuotedState)
             }
 
@@ -1845,12 +1845,12 @@ internal object BeforeDoctypeSystemIdentifierState : State {
             }
 
             '"' -> {
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierDoubleQuotedState)
             }
 
             '\'' -> {
-                tokenizer.emit(DocTypeSystemIdentifier(' '))
+                tokenizer.emit(DocTypeSystemIdentifierChar(' '))
                 tokenizer.switch(DoctypeSystemIdentifierSingleQuotedState)
             }
 
@@ -1887,7 +1887,7 @@ internal object DoctypeSystemIdentifierDoubleQuotedState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier('\uFFFD'))
+                tokenizer.emit(DocTypeSystemIdentifierChar('\uFFFD'))
             }
 
             '>' -> {
@@ -1905,7 +1905,7 @@ internal object DoctypeSystemIdentifierDoubleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(DocTypeSystemIdentifier(current))
+                tokenizer.emit(DocTypeSystemIdentifierChar(current))
             }
         }
     }
@@ -1920,7 +1920,7 @@ internal object DoctypeSystemIdentifierSingleQuotedState : State {
 
             NULL -> {
                 tokenizer.error(UnexpectedNullCharacterError(reader.position))
-                tokenizer.emit(DocTypeSystemIdentifier('\uFFFD'))
+                tokenizer.emit(DocTypeSystemIdentifierChar('\uFFFD'))
             }
 
             '>' -> {
@@ -1938,7 +1938,7 @@ internal object DoctypeSystemIdentifierSingleQuotedState : State {
             }
 
             else -> {
-                tokenizer.emit(DocTypeSystemIdentifier(current))
+                tokenizer.emit(DocTypeSystemIdentifierChar(current))
             }
         }
     }
@@ -2117,7 +2117,7 @@ internal object AmbiguousAmpersandState : State {
             in asciiAlphanumeric -> {
                 val returnState = tokenizer.returnState
                 if (returnState.inAttribute) {
-                    tokenizer.emit(AttributeValue(current))
+                    tokenizer.emit(AttributeValueChar(current))
                 } else {
                     tokenizer.emit(Character(current))
                 }

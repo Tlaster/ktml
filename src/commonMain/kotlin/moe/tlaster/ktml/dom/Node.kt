@@ -3,7 +3,6 @@ package moe.tlaster.ktml.dom
 data class Attribute(
     val name: String,
     val value: String?,
-    val namespace: String? = null
 ) {
     override fun toString(): String {
         return "$name${if (value == null) "" else "=\"$value\""}"
@@ -12,7 +11,6 @@ data class Attribute(
 
 interface Node {
     val name: String
-    val namespace: String?
 }
 
 interface Element : Node {
@@ -26,7 +24,6 @@ interface Element : Node {
 
 data class HtmlElement(
     override val name: String,
-    override val namespace: String? = null,
 ) : Element {
     override val attributes = arrayListOf<Attribute>()
     override val children = arrayListOf<Node>()
@@ -46,7 +43,6 @@ data class HtmlElement(
 
 data class Text(
     override val name: String = "#text",
-    override val namespace: String? = null,
     val text: String
 ) : Node {
     override fun toString(): String {
@@ -56,7 +52,6 @@ data class Text(
 
 data class Comment(
     override val name: String = "#comment",
-    override val namespace: String? = null,
     val text: String
 ) : Node {
     override fun toString(): String {
@@ -66,7 +61,6 @@ data class Comment(
 
 data class Document(
     override val name: String = "#document",
-    override val namespace: String? = null,
     val children: List<Node>
 ) : Node {
     override fun toString(): String {
@@ -76,7 +70,6 @@ data class Document(
 
 data class DocumentType(
     override val name: String,
-    override val namespace: String? = null,
 ) : Node {
     override fun toString(): String {
         return "<!DOCTYPE $name>"
@@ -85,7 +78,6 @@ data class DocumentType(
 
 data class CDATASection(
     override val name: String = "#cdataSection",
-    override val namespace: String? = null,
     val text: String
 ) : Node {
     override fun toString(): String {
