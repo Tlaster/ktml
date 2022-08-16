@@ -33,7 +33,7 @@ internal object DataState : State {
         when (val current = reader.consume()) {
             '<' -> {
                 // Workaround for Google && YouTube
-                if (tokenizer.isInScript() && reader.hasNext() && reader.next() != '/') {
+                if (tokenizer.isInRawText() && reader.hasNext() && reader.next() != '/') {
                     tokenizer.emit(Character(current))
                 } else {
                     tokenizer.switch(TagOpenState)

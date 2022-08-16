@@ -1,36 +1,29 @@
 package moe.tlaster.ktml.dom
 
-data class Attribute(
-    val name: String,
-    val value: String?,
-) {
-    override fun toString(): String {
-        return "$name${if (value == null) "" else "=\"$value\""}"
-    }
-}
-
 interface Node {
     val name: String
 }
 
 interface Element : Node {
-    val attributes: List<Attribute>
+    val attributes: Map<String, String>
     val children: List<Node>
     val parent: Element?
-    val innerHTML: String
-    val outerHTML: String
+//    val innerHTML: String
+//    val outerHTML: String
     val innerText: String
+    val namespace: String
 }
 
 data class HtmlElement(
     override val name: String,
+    override val namespace: String = "",
+    override val parent: Element? = null,
 ) : Element {
-    override val attributes = arrayListOf<Attribute>()
+    override val attributes = linkedMapOf<String, String>()
     override val children = arrayListOf<Node>()
-    override var parent: Element? = null
-    override var innerHTML: String = ""
-    override val outerHTML: String
-        get() = "<$name${attributes.joinToString(" ") { it.toString() }}>$innerHTML</$name>"
+//    override var innerHTML: String = ""
+//    override val outerHTML: String
+//        get() = "<$name${attributes.map { "${it.key}=${it.value}" }.joinToString(" ")}>$innerHTML</$name>"
     override val innerText: String
         get() = children.joinToString("") {
             when (it) {
@@ -42,8 +35,8 @@ data class HtmlElement(
 }
 
 data class Text(
+    val text: String,
     override val name: String = "#text",
-    val text: String
 ) : Node {
     override fun toString(): String {
         return text
@@ -51,36 +44,18 @@ data class Text(
 }
 
 data class Comment(
+    val text: String,
     override val name: String = "#comment",
-    val text: String
 ) : Node {
     override fun toString(): String {
         return "<!--$text-->"
     }
 }
 
-data class Document(
-    override val name: String = "#document",
-    val children: List<Node>
-) : Node {
-    override fun toString(): String {
-        return children.joinToString("")
-    }
-}
-
-data class DocumentType(
+data class Doctype(
     override val name: String,
 ) : Node {
     override fun toString(): String {
         return "<!DOCTYPE $name>"
-    }
-}
-
-data class CDATASection(
-    override val name: String = "#cdataSection",
-    val text: String
-) : Node {
-    override fun toString(): String {
-        return "<![CDATA[$text]]>"
     }
 }

@@ -111,7 +111,10 @@ internal class Tokenizer {
                 }
             }
             EOF -> buildTokens()
-            TagSelfClose -> Unit
+            TagSelfClose -> {
+                val last = tokenBuilders.lastOrNull()
+                require(last is TagBuilder || last is AttributeBuilder) { "last token is not a tag, is $last, tokens: $tokenBuilders" }
+            }
         }
     }
 
@@ -167,13 +170,14 @@ internal class Tokenizer {
         return last is EndTagBuilder && last.name.toString() == lastOpenTag.name.toString()
     }
 
+    private val rawTextElementNames = listOf("script", "style")
     // Workaround for Google && YouTube
-    fun isInScript(): Boolean {
+    fun isInRawText(): Boolean {
         val last = tokenBuilders.lastOrNull() ?: return false
         if (last !is TextBuilder) {
             return false
         }
-        val lastOpenScriptTag = tokenBuilders.lastOrNull { it is TagBuilder && it.name.toString() == "script" } ?: return false
+        val lastOpenScriptTag = tokenBuilders.lastOrNull { it is TagBuilder && it.name.toString() in rawTextElementNames } ?: return false
         val lastOpenScriptTagIndex = tokenBuilders.indexOf(lastOpenScriptTag)
         if (lastOpenScriptTagIndex == tokenBuilders.lastIndex - 1) {
             return true
