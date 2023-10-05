@@ -1,14 +1,12 @@
 package moe.tlaster.ktml.parser
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.test.assertTrue
-import kotlinx.coroutines.test.runTest
 import moe.tlaster.ktml.Ktml
-import moe.tlaster.ktml.parser.token.*
+import moe.tlaster.ktml.parser.token.Attribute
+import moe.tlaster.ktml.parser.token.EndTag
+import moe.tlaster.ktml.parser.token.Tag
+import moe.tlaster.ktml.parser.token.Text
 
 class TokenizerTest {
 
@@ -91,53 +89,4 @@ class TokenizerTest {
         assertContentEquals(expectTokens, tokens)
     }
 
-    @Test
-    fun testYoutube() = runTest {
-        val result = HttpClient().get("https://www.youtube.com/watch?v=wWltASCJO-U")
-        val html = result.bodyAsText()
-        val tokens = Ktml.tokenize(html)
-        assertTrue {
-            tokens.isNotEmpty()
-        }
-    }
-
-    @Test
-    fun testGoogle() = runTest {
-        val result = HttpClient().get("https://www.google.com/")
-        val html = result.bodyAsText()
-        val tokens = Ktml.tokenize(html)
-        assertTrue {
-            tokens.isNotEmpty()
-        }
-    }
-
-    @Test
-    fun testGoogleSearch() = runTest {
-        val result = HttpClient().get("https://www.google.com/search?q=kotlin")
-        val html = result.bodyAsText()
-        val tokens = Ktml.tokenize(html)
-        assertTrue {
-            tokens.isNotEmpty()
-        }
-    }
-
-    @Test
-    fun testEHentai() = runTest {
-        val result = HttpClient().get("https://e-hentai.org/")
-        val html = result.bodyAsText()
-        val tokens = Ktml.tokenize(html)
-        assertTrue {
-            tokens.isNotEmpty()
-        }
-    }
-
-    @Test
-    fun testBilibili() = runTest {
-        val result = HttpClient().get("https://www.bilibili.com/")
-        val html = result.bodyAsText()
-        val tokens = Ktml.tokenize(html)
-        assertTrue {
-            tokens.isNotEmpty()
-        }
-    }
 }
