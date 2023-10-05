@@ -1,5 +1,7 @@
 plugins {
     kotlin("multiplatform") version "1.9.0"
+    id("maven-publish")
+    id("signing")
 }
 
 group = "moe.tlaster"
