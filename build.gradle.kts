@@ -1,3 +1,4 @@
+import java.util.Properties
 plugins {
     kotlin("multiplatform") version "1.9.0"
     id("maven-publish")
