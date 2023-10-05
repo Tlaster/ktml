@@ -14,7 +14,7 @@ object Ktml {
         return tokenizer.tokens
     }
 
-    internal fun parse(text: String): Node {
+    fun parse(text: String): Node {
         val tokens = tokenize(text)
         return SimpleParser.parse(tokens)
     }
