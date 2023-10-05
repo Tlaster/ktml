@@ -357,19 +357,20 @@ internal class TreeBuilder {
     // 4.Push element onto the stack of open elements so that it is the new current node.
     // 5.Return element.
     fun insertForeignElement(token: Token, namespace: String) {
-        val adjustedInsertionLocation = findAppropriateInsertionLocation(token)
-        val element = createElement(token, namespace)
-        if (adjustedInsertionLocation != null) {
-            if (!isParsingFragment) {
-                element.relevantAgent.customElementReactionsStack.push(CustomElementReactions(element))
-            }
-            adjustedInsertionLocation.insert(element)
-            if (!isParsingFragment) {
-                element.relevantAgent.customElementReactionsStack.pop()
-                element.relevantAgent.customElementReactionsStack.peek().invokeCustomElementReactions()
-            }
-        }
-        stackOfOpenElements.push(element)
+        TODO()
+//        val adjustedInsertionLocation = findAppropriateInsertionLocation(token)
+//        val element = createElement(token, namespace)
+//        if (adjustedInsertionLocation != null) {
+//            if (!isParsingFragment) {
+//                element.relevantAgent.customElementReactionsStack.push(CustomElementReactions(element))
+//            }
+//            adjustedInsertionLocation.insert(element)
+//            if (!isParsingFragment) {
+//                element.relevantAgent.customElementReactionsStack.pop()
+//                element.relevantAgent.customElementReactionsStack.peek().invokeCustomElementReactions()
+//            }
+//        }
+//        stackOfOpenElements.push(element)
     }
 
     // The appropriate place for inserting a node, optionally using a particular override target, is the position in an element returned by running the following steps:
@@ -389,24 +390,25 @@ internal class TreeBuilder {
     // 3.If the adjusted insertion location is inside a template element, let it instead be inside the template element's template contents, after its last child (if any).
     // 4.Return the adjusted insertion location.
     fun findAppropriateInsertionLocation(token: Token): Node? {
-        var target = if (overrideTarget != null) overrideTarget else currentNode
-        if (fosterParenting && target is Element && (target.tagName == "table" || target.tagName == "tbody" || target.tagName == "tfoot" || target.tagName == "thead" || target.tagName == "tr")) {
-            val lastTemplate = stackOfOpenElements.last { it is Template } as Template
-            val lastTable = stackOfOpenElements.last { it is Element && it.tagName == "table" } as Element?
-            if (lastTemplate != null && (lastTable == null || lastTemplate.indexInStack < lastTable.indexInStack)) {
-                return lastTemplate.templateContents.lastChild?.let { it.nextSibling } ?: lastTemplate.templateContents
-            }
-            if (lastTable == null) {
-                return stackOfOpenElements.first { it is Element }.lastChild?.let { it.nextSibling } ?: stackOfOpenElements.first { it is Element }
-            }
-            if (lastTable.parentNode != null) {
-                return lastTable.parentNode
-            }
-            val previousElement = stackOfOpenElements.get(lastTable.indexInStack - 1)
-            return previousElement.lastChild?.let { it.nextSibling } ?: previousElement
-        } else {
-            return target.lastChild?.let { it.nextSibling } ?: target
-        }
+        TODO()
+//        var target = if (overrideTarget != null) overrideTarget else currentNode
+//        if (fosterParenting && target is Element && (target.tagName == "table" || target.tagName == "tbody" || target.tagName == "tfoot" || target.tagName == "thead" || target.tagName == "tr")) {
+//            val lastTemplate = stackOfOpenElements.last { it is Template } as Template
+//            val lastTable = stackOfOpenElements.last { it is Element && it.tagName == "table" } as Element?
+//            if (lastTemplate != null && (lastTable == null || lastTemplate.indexInStack < lastTable.indexInStack)) {
+//                return lastTemplate.templateContents.lastChild?.let { it.nextSibling } ?: lastTemplate.templateContents
+//            }
+//            if (lastTable == null) {
+//                return stackOfOpenElements.first { it is Element }.lastChild?.let { it.nextSibling } ?: stackOfOpenElements.first { it is Element }
+//            }
+//            if (lastTable.parentNode != null) {
+//                return lastTable.parentNode
+//            }
+//            val previousElement = stackOfOpenElements.get(lastTable.indexInStack - 1)
+//            return previousElement.lastChild?.let { it.nextSibling } ?: previousElement
+//        } else {
+//            return target.lastChild?.let { it.nextSibling } ?: target
+//        }
     }
 
     /*
