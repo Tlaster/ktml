@@ -13,28 +13,35 @@ repositories {
 }
 
 kotlin {
-    macosX64()
-    macosArm64()
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "11"
-        }
-        withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
+        jvmToolchain(11)
+        testRuns.named("test") {
+            executionTask.configure {
+                useJUnitPlatform()
+            }
         }
     }
-    iosArm64()
-    iosX64()
-    iosSimulatorArm64()
-    linuxArm64()
-    linuxX64()
-    watchosArm32()
-    watchosArm64()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
-    tvosArm64()
-    tvosSimulatorArm64()
+    js {
+        browser()
+        nodejs()
+    }
+    if (HostManager.hostIsMac) {
+        ios()
+        iosSimulatorArm64()
+        macosX64()
+        macosArm64()
+        watchos()
+        watchosSimulatorArm64()
+        tvos()
+        tvosSimulatorArm64()
+    }
+    if (HostManager.hostIsMingw) {
+        mingwX64()
+    }
+    if (HostManager.hostIsLinux) {
+        linuxX64()
+        linuxArm64()
+    }
 
 
     sourceSets {
