@@ -46,6 +46,23 @@ kotlin {
     }
 }
 
+ext {
+    val publishPropFile = rootProject.file("publish.properties")
+    if (publishPropFile.exists()) {
+        Properties().apply {
+            load(publishPropFile.inputStream())
+        }.forEach { name, value ->
+            set(name.toString(), value)
+        }
+    } else {
+        set("signing.keyId", System.getenv("SIGNING_KEY_ID"))
+        set("signing.password", System.getenv("SIGNING_PASSWORD"))
+        set("signing.secretKeyRingFile", System.getenv("SIGNING_SECRET_KEY_RING_FILE"))
+        set("ossrhUsername", System.getenv("OSSRH_USERNAME"))
+        set("ossrhPassword", System.getenv("OSSRH_PASSWORD"))
+    }
+}
+
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
