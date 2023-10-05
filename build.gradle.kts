@@ -39,9 +39,6 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("io.ktor:ktor-client-core:2.3.4")
-                implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
             }
         }
     }
