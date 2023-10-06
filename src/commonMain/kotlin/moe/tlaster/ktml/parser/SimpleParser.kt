@@ -1,6 +1,6 @@
 package moe.tlaster.ktml.parser
 
-import moe.tlaster.ktml.dom.HtmlElement
+import moe.tlaster.ktml.dom.Element
 import moe.tlaster.ktml.dom.Node
 import moe.tlaster.ktml.parser.token.Attribute
 import moe.tlaster.ktml.parser.token.Comment
@@ -13,9 +13,9 @@ import moe.tlaster.ktml.parser.token.Token
 
 internal object SimpleParser {
     private val voidElements = listOf("area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr")
-    fun parse(tokens: List<Token>): Node {
+    fun parse(tokens: List<Token>): Element {
         val stack = mutableListOf<Node>()
-        val root = HtmlElement("root")
+        val root = Element("html")
         var current = root
         stack.add(root)
         for (token in tokens) {
@@ -25,13 +25,13 @@ internal object SimpleParser {
                 }
                 is Comment -> {
                     val element = stack.last()
-                    if (element is HtmlElement) {
+                    if (element is Element) {
                         element.children.add(moe.tlaster.ktml.dom.Comment(token.text))
                     }
                 }
                 is Doctype -> {
                     val element = stack.last()
-                    if (element is HtmlElement) {
+                    if (element is Element) {
                         element.children.add(moe.tlaster.ktml.dom.Doctype(token.text))
                     }
                 }
@@ -40,8 +40,8 @@ internal object SimpleParser {
                 }
                 is Tag -> {
                     val element = stack.last()
-                    if (element is HtmlElement) {
-                        val tag = HtmlElement(token.name, parent = element)
+                    if (element is Element) {
+                        val tag = Element(token.name, parent = element)
                         element.children.add(tag)
                         if (token.name !in voidElements) {
                             stack.add(tag)
@@ -51,10 +51,10 @@ internal object SimpleParser {
                 }
                 is EndTag -> {
                     val element = stack.last()
-                    if (element is HtmlElement) {
+                    if (element is Element) {
                         if (element.name == token.name) {
                             stack.removeAt(stack.size - 1)
-                            current = stack.last() as HtmlElement
+                            current = stack.last() as Element
                         } else {
                             throw Exception("unmatch tag ${element.name} and ${token.name}")
                         }
@@ -62,7 +62,7 @@ internal object SimpleParser {
                 }
                 is Text -> {
                     val element = stack.last()
-                    if (element is HtmlElement) {
+                    if (element is Element) {
                         element.children.add(moe.tlaster.ktml.dom.Text(token.text))
                     }
                 }

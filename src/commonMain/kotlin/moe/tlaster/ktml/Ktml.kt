@@ -1,6 +1,6 @@
 package moe.tlaster.ktml
 
-import moe.tlaster.ktml.dom.Node
+import moe.tlaster.ktml.dom.Element
 import moe.tlaster.ktml.parser.SimpleParser
 import moe.tlaster.ktml.parser.StringReader
 import moe.tlaster.ktml.parser.Tokenizer
@@ -14,7 +14,7 @@ object Ktml {
         return tokenizer.tokens
     }
 
-    fun parse(text: String): Node {
+    fun parse(text: String): Element {
         val tokens = tokenize(text)
         return SimpleParser.parse(tokens)
     }

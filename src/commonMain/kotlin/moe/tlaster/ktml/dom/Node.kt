@@ -1,30 +1,17 @@
 package moe.tlaster.ktml.dom
 
-interface Node {
+sealed interface Node {
     val name: String
 }
 
-interface Element : Node {
-    val attributes: Map<String, String>
-    val children: List<Node>
-    val parent: Element?
-//    val innerHTML: String
-//    val outerHTML: String
-    val innerText: String
-    val namespace: String
-}
-
-data class HtmlElement(
+data class Element(
     override val name: String,
-    override val namespace: String = "",
-    override val parent: Element? = null,
-) : Element {
-    override val attributes = linkedMapOf<String, String>()
-    override val children = arrayListOf<Node>()
-//    override var innerHTML: String = ""
-//    override val outerHTML: String
-//        get() = "<$name${attributes.map { "${it.key}=${it.value}" }.joinToString(" ")}>$innerHTML</$name>"
-    override val innerText: String
+    val namespace: String = "",
+    val parent: Element? = null,
+) : Node {
+    val attributes = linkedMapOf<String, String>()
+    val children = arrayListOf<Node>()
+    val innerText: String
         get() = children.joinToString("") {
             when (it) {
                 is Text -> it.text
