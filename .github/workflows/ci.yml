@@ -1,4 +1,4 @@
-name: macOS Build
+name: Build
 
 on:
   push:
@@ -10,9 +10,10 @@ on:
 
 jobs:
   build:
-
-    runs-on: macos-latest
-
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     
@@ -20,16 +21,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-
-    - name: Apply Signing
-      if: ${{ github.event_name != 'pull_request' }}
-      env:
-        SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-        SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-        SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-      run: ./.github/apply_signing.sh
 
     - name: Build with Gradle
       run: ./gradlew assemble --stacktrace --no-daemon --no-parallel
@@ -39,6 +30,11 @@ jobs:
 
     - name: Publishing
       if: startsWith(github.ref, 'refs/tags/')
+      env:
+        ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+        ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+        ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
       run: ./gradlew publish --no-daemon --no-parallel
 
 
