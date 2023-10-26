@@ -28,6 +28,14 @@ jobs:
     - name: Testing
       run: ./gradlew check --no-daemon --no-parallel
 
+    - name: Publish Snapshot
+      if: github.repository == 'tlaster/ktml' && github.ref == 'refs/heads/master'
+      env:
+        ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+      run: |
+        ./gradlew publish --no-daemon --stacktrace
+
     - name: Publishing
       if: startsWith(github.ref, 'refs/tags/')
       env:

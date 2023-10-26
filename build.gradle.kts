@@ -1,14 +1,9 @@
-import org.jetbrains.kotlin.konan.target.HostManager
-import java.util.Properties
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
   kotlin("multiplatform") version "1.9.0"
   id("com.vanniktech.maven.publish") version "0.25.3"
 }
-
-group = "moe.tlaster"
-version = "0.0.5"
 
 repositories {
   mavenCentral()
@@ -55,6 +50,11 @@ kotlin {
 mavenPublishing {
   publishToMavenCentral(SonatypeHost.S01)
   signAllPublications()
+  coordinates(
+    groupId = "moe.tlaster",
+    artifactId = "ktml",
+    version = "0.0.5-SNAPSHOT",
+  )
   pom {
     name.set("ktml")
     description.set("Html parser for Kotlin Multiplatform")
