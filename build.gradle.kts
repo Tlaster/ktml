@@ -5,6 +5,15 @@ plugins {
   id("com.vanniktech.maven.publish") version "0.25.3"
 }
 
+
+val libName = "ktml"
+val libGroup = "moe.tlaster"
+val libVersion = "0.0.6-SNAPSHOT"
+
+group = libGroup
+version = libVersion
+
+
 repositories {
   mavenCentral()
 }
@@ -12,7 +21,9 @@ repositories {
 kotlin {
   targetHierarchy.default()
   jvm {
-    jvmToolchain(11)
+    compilations.all {
+        kotlinOptions.jvmTarget = "1.8"
+    }
     testRuns.named("test") {
       executionTask.configure {
         useJUnitPlatform()
@@ -51,12 +62,12 @@ mavenPublishing {
   publishToMavenCentral(SonatypeHost.S01)
   signAllPublications()
   coordinates(
-    groupId = "moe.tlaster",
-    artifactId = "ktml",
-    version = "0.0.5-SNAPSHOT",
+    groupId = libGroup,
+    artifactId = libName,
+    version = libVersion,
   )
   pom {
-    name.set("ktml")
+    name.set(libName)
     description.set("Html parser for Kotlin Multiplatform")
     url.set("https://github.com/Tlaster/ktml")
     licenses {
