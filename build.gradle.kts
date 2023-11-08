@@ -8,7 +8,7 @@ plugins {
 
 val libName = "ktml"
 val libGroup = "moe.tlaster"
-val libVersion = "0.0.6-SNAPSHOT"
+val libVersion = "0.0.6"
 
 group = libGroup
 version = libVersion
