@@ -63,11 +63,19 @@ internal object SimpleParser {
                 is Text -> {
                     val element = stack.last()
                     if (element is Element) {
-                        element.children.add(moe.tlaster.ktml.dom.Text(token.text))
+                        element.children.add(moe.tlaster.ktml.dom.Text(token.text.replaceEntities()))
                     }
                 }
             }
         }
         return root
+    }
+
+    private fun String.replaceEntities(): String {
+        return this.replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&amp;", "&")
+            .replace("&quot;", "\"")
+            .replace("&apos;", "'")
     }
 }

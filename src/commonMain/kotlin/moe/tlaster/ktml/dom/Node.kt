@@ -15,7 +15,7 @@ data class Element(
         get() = children.joinToString("") {
             when (it) {
                 is Text -> it.text
-                is Element -> it.innerText
+                is Element -> if (it.name == "br") "\n" else it.innerText
                 else -> ""
             }
         }
