@@ -1,4 +1,5 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   kotlin("multiplatform") version "2.0.0"
@@ -19,10 +20,10 @@ repositories {
 }
 
 kotlin {
-  targetHierarchy.default()
+  applyDefaultHierarchyTemplate()
   jvm {
-    compilations.all {
-        kotlinOptions.jvmTarget = "1.8"
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_1_8)
     }
     testRuns.named("test") {
       executionTask.configure {
@@ -34,13 +35,16 @@ kotlin {
     browser()
     nodejs()
   }
-  ios()
+  iosX64()
+  iosArm64()
   iosSimulatorArm64()
   macosX64()
   macosArm64()
-  watchos()
+  watchosX64()
+  watchosArm64()
   watchosSimulatorArm64()
-  tvos()
+  tvosArm64()
+  tvosX64()
   tvosSimulatorArm64()
   mingwX64()
 
